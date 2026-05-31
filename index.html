@@ -1,483 +1,740 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RPL Player Browser</title>
-  <style>
-    :root {
-      --bg: #050505;
-      --panel: rgba(28, 0, 0, 0.92);
-      --panel2: rgba(12, 12, 12, 0.98);
-      --text: #f4f4f4;
-      --muted: #c8b4b4;
-      --accent: #ff2d2d;
-      --accent2: #ff5a5a;
-      --accent3: #ff8a8a;
-      --gold: #ffd24d;
-      --border: rgba(255, 45, 45, 0.16);
-      --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
-      --radius: 22px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPL Star System</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:      #e8001d;
+    --red-dim:  rgba(232,0,29,.12);
+    --red-glow: rgba(232,0,29,.25);
+    --bg:       #07070c;
+    --surface:  #0f0f16;
+    --surface2: #161620;
+    --surface3: #1c1c28;
+    --border:   rgba(255,255,255,.08);
+    --border2:  rgba(255,255,255,.04);
+    --muted:    #56566a;
+    --muted2:   #3a3a4e;
+    --text:     #e0e0f0;
+    --gold:     #f59e0b;
+    --gold-dim: rgba(245,158,11,.14);
+    --s5:       #f59e0b;
+    --s5-dim:   rgba(245,158,11,.14);
+    --s4:       #60a5fa;
+    --s4-dim:   rgba(96,165,250,.12);
+    --s3:       #22c55e;
+    --s3-dim:   rgba(34,197,94,.12);
+    --s2:       #a78bfa;
+    --s2-dim:   rgba(167,139,250,.12);
+    --s1:       #56566a;
+    --s1-dim:   rgba(86,86,106,.14);
+  }
 
-    * { box-sizing: border-box; }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
 
-    body {
-      margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(255, 45, 45, 0.24), transparent 26%),
-        radial-gradient(circle at top right, rgba(255, 90, 90, 0.18), transparent 24%),
-        linear-gradient(180deg, #000 0%, #060606 100%);
-      color: var(--text);
-      min-height: 100vh;
-    }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
 
-    .wrap {
-      max-width: 1380px;
-      margin: 0 auto;
-      padding: 28px 18px 60px;
-    }
+  /* ── NAV ── */
+  nav {
+    position: sticky; top:0; z-index:100;
+    height: 52px;
+    display: flex; align-items:center; justify-content:space-between;
+    padding: 0 20px;
+    background: rgba(7,7,12,.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-left { display:flex; align-items:center; gap:12px; }
+  .nav-logo {
+    width:28px; height:28px; border-radius:6px;
+    background: var(--red);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Bebas Neue',sans-serif; font-size:15px; color:#fff;
+    letter-spacing:.02em; flex-shrink:0;
+  }
+  .nav-title {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:17px; letter-spacing:.08em; color:#fff;
+  }
+  .nav-title em { color:var(--red); font-style:normal; }
+  .nav-pill {
+    font-size:10px; font-weight:600; letter-spacing:.08em;
+    color:var(--muted); text-transform:uppercase;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius:20px; padding:3px 9px;
+    display:none;
+  }
+  @media (min-width:480px) { .nav-pill { display:block; } }
+  .nav-right { display:flex; align-items:center; gap:10px; }
+  .discord-btn {
+    display:flex; align-items:center; gap:6px;
+    padding: 6px 12px; border-radius:8px;
+    background: rgba(88,101,242,.2);
+    border: 1px solid rgba(88,101,242,.35);
+    color: #8b95f5;
+    font-size:12px; font-weight:600;
+    cursor:pointer; transition: background .15s, border-color .15s;
+    text-decoration:none; letter-spacing:.02em;
+  }
+  .discord-btn:hover { background:rgba(88,101,242,.32); border-color:rgba(88,101,242,.55); }
+  .discord-btn svg { flex-shrink:0; }
 
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
-    }
+  /* ── PAGE ── */
+  .page { max-width:1340px; margin:0 auto; padding:0 16px 80px; }
 
-    .hero {
-      display: grid;
-      grid-template-columns: 1.8fr 1fr;
-      gap: 18px;
-      margin-bottom: 18px;
-    }
+  /* ── HERO ── */
+  .hero {
+    padding: 28px 0 22px;
+    border-bottom: 1px solid var(--border2);
+    margin-bottom: 22px;
+  }
+  .hero-inner {
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:20px; flex-wrap:wrap;
+  }
+  .hero-title {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(26px,4vw,38px); letter-spacing:.04em; color:#fff; line-height:1;
+  }
+  .hero-title em { color:var(--red); font-style:normal; }
+  .hero-sub { font-size:12px; color:var(--muted); margin-top:6px; letter-spacing:.02em; line-height:1.6; }
 
-    .hero-main {
-      padding: 28px;
-      overflow: hidden;
-      position: relative;
-      border-color: rgba(255, 45, 45, 0.22);
-    }
+  /* ── STAR LEGEND (horizontal pills) ── */
+  .star-legend {
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+    margin-top:16px;
+  }
+  .sl-item {
+    display:flex; align-items:center; gap:6px;
+    padding: 5px 10px; border-radius:8px;
+    font-size:11px; font-weight:600; letter-spacing:.04em;
+    border: 1px solid transparent;
+    white-space:nowrap;
+  }
+  .sl-item.s5 { background:var(--s5-dim); border-color:rgba(245,158,11,.28); color:var(--s5); }
+  .sl-item.s4 { background:var(--s4-dim); border-color:rgba(96,165,250,.25); color:var(--s4); }
+  .sl-item.s3 { background:var(--s3-dim); border-color:rgba(34,197,94,.22); color:var(--s3); }
+  .sl-item.s2 { background:var(--s2-dim); border-color:rgba(167,139,250,.22); color:var(--s2); }
+  .sl-item.s1 { background:var(--s1-dim); border-color:rgba(86,86,106,.3); color:var(--muted); }
+  .sl-stars { display:flex; gap:2px; }
+  .sl-dot { width:7px; height:7px; border-radius:50%; }
+  .s5 .sl-dot { background:var(--s5); }
+  .s4 .sl-dot { background:var(--s4); }
+  .s3 .sl-dot { background:var(--s3); }
+  .s2 .sl-dot { background:var(--s2); }
+  .s1 .sl-dot { background:var(--muted); }
 
-    .hero-main::after {
-      content: "";
-      position: absolute;
-      inset: auto -120px -120px auto;
-      width: 320px;
-      height: 320px;
-      background: radial-gradient(circle, rgba(255, 45, 45, 0.26), transparent 62%);
-      pointer-events: none;
-    }
+  /* ── ELIGIBILITY CHECKER PANEL ── */
+  .checker-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow:hidden;
+  }
+  .checker-head {
+    display:flex; align-items:center; gap:8px;
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .checker-head-label {
+    font-size:10px; font-weight:700; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--muted);
+  }
+  .checker-dot { width:6px; height:6px; border-radius:50%; background:var(--red); flex-shrink:0; }
+  .checker-body {
+    padding: 16px;
+    display:flex; flex-wrap:wrap; gap:14px; align-items:flex-start;
+  }
+  .checker-left { flex:1; min-width:200px; }
+  .checker-label { font-size:11px; color:var(--muted); letter-spacing:.04em; margin-bottom:8px; font-weight:600; text-transform:uppercase; }
+  .checker-input {
+    width:100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius:8px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-family:'Inter',sans-serif;
+    outline:none;
+    transition: border-color .15s;
+  }
+  .checker-input:focus { border-color: rgba(232,0,29,.4); }
+  .checker-input::placeholder { color:var(--muted2); }
+  .checker-result {
+    flex:2; min-width:240px;
+    display:none;
+  }
+  .checker-result.show { display:block; }
+  .cr-name {
+    font-family:'Bebas Neue',sans-serif;
+    font-size:20px; letter-spacing:.04em; color:#fff; margin-bottom:4px;
+  }
+  .cr-star-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  .cr-star-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    padding: 3px 10px; border-radius:6px;
+    font-size:11px; font-weight:700; letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  .cr-star-badge.s5 { background:var(--s5-dim); border:1px solid rgba(245,158,11,.3); color:var(--s5); }
+  .cr-star-badge.s4 { background:var(--s4-dim); border:1px solid rgba(96,165,250,.28); color:var(--s4); }
+  .cr-star-badge.s3 { background:var(--s3-dim); border:1px solid rgba(34,197,94,.25); color:var(--s3); }
+  .cr-star-badge.s2 { background:var(--s2-dim); border:1px solid rgba(167,139,250,.25); color:var(--s2); }
+  .cr-star-badge.s1 { background:var(--s1-dim); border:1px solid rgba(86,86,106,.3); color:var(--muted); }
+  .cr-ovr { font-size:11px; color:var(--muted); }
+  .cr-eligibility-label { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:7px; }
+  .cr-roles {
+    display:flex; flex-wrap:wrap; gap:6px;
+  }
+  .cr-role {
+    padding: 4px 10px; border-radius:6px;
+    font-size:11px; font-weight:600;
+  }
+  .cr-role.eligible   { background:rgba(34,197,94,.13); border:1px solid rgba(34,197,94,.28); color:#22c55e; }
+  .cr-role.overqualified { background:rgba(232,0,29,.1); border:1px solid rgba(232,0,29,.22); color:#f87171; }
+  .cr-role.below      { background:rgba(255,255,255,.04); border:1px solid var(--border2); color:var(--muted2); }
+  .cr-not-found { font-size:13px; color:var(--muted); padding:6px 0; }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255, 45, 45, 0.14);
-      border: 1px solid rgba(255, 45, 45, 0.34);
-      color: #ffe1e1;
-      font-size: 13px;
-      font-weight: 800;
-      margin-bottom: 14px;
-      letter-spacing: 0.02em;
-    }
+  /* Discord checker variant */
+  .discord-checker {
+    display:none;
+    flex:2; min-width:240px;
+  }
+  .discord-checker.show { display:block; }
 
-    h1 {
-      margin: 0 0 10px;
-      font-size: clamp(2rem, 4vw, 3.8rem);
-      line-height: 1.02;
-      letter-spacing: -0.06em;
-    }
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display:flex; flex-wrap:wrap; gap:10px;
+    margin-bottom: 20px;
+  }
+  .stat-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    display:flex; flex-direction:column; gap:2px;
+    flex:1; min-width:100px;
+  }
+  .stat-pill-label { font-size:9px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+  .stat-pill-val { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:.02em; color:#fff; line-height:1; }
 
-    .subtitle {
-      margin: 0;
-      max-width: 900px;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.7;
-    }
+  /* ── FILTERS ── */
+  .filters {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow:hidden;
+  }
+  .filters-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    gap:12px; flex-wrap:wrap;
+  }
+  .filters-label {
+    font-size:10px; font-weight:700; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--muted);
+  }
+  .result-count { font-size:11px; color:var(--muted); }
+  .result-count strong { color:var(--text); }
+  .filters-body {
+    padding: 12px 16px;
+    display:flex; flex-wrap:wrap; gap:10px;
+  }
+  .filter-group { display:flex; flex-direction:column; gap:4px; flex:1; min-width:130px; }
+  .filter-label { font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted2); }
+  .filter-select, .filter-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius:8px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 12px;
+    font-family:'Inter',sans-serif;
+    outline:none; cursor:pointer;
+    transition: border-color .15s;
+    -webkit-appearance:none;
+  }
+  .filter-select:focus, .filter-input:focus { border-color: rgba(232,0,29,.35); }
+  .filter-input::placeholder { color:var(--muted2); }
+  .filters-letters {
+    padding: 0 16px 12px;
+    display:flex; flex-wrap:wrap; gap:5px;
+  }
+  .letter-btn {
+    height:28px; min-width:28px; padding:0 7px;
+    border-radius:6px;
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-size:11px; font-weight:600; letter-spacing:.04em;
+    cursor:pointer; transition:background .12s, border-color .12s, color .12s;
+  }
+  .letter-btn:hover { background:rgba(255,255,255,.05); color:var(--text); }
+  .letter-btn.active {
+    background: var(--red-dim);
+    border-color: rgba(232,0,29,.35);
+    color: #ff6b7a;
+  }
 
-    .hero-side {
-      display: grid;
-      gap: 18px;
-    }
+  /* ── PLAYER GRID ── */
+  .player-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+  }
+  @media (max-width:600px) {
+    .player-grid { grid-template-columns: 1fr 1fr; gap:8px; }
+  }
+  @media (max-width:400px) {
+    .player-grid { grid-template-columns: 1fr; }
+  }
 
-    .stat-box {
-      padding: 22px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-height: 100%;
-      background: linear-gradient(180deg, rgba(22, 0, 0, 0.96), rgba(10, 10, 10, 0.96));
-    }
+  /* ── PLAYER CARD ── */
+  .pcard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 14px;
+    transition: border-color .15s, background .15s;
+    position:relative;
+    overflow:hidden;
+  }
+  .pcard:hover { border-color:rgba(255,255,255,.14); background:var(--surface2); }
+  .pcard::before {
+    content:''; position:absolute;
+    top:0; left:0; right:0; height:2px;
+    border-radius:2px 2px 0 0;
+  }
+  .pcard.tier-5::before { background:var(--s5); }
+  .pcard.tier-4::before { background:var(--s4); }
+  .pcard.tier-3::before { background:var(--s3); }
+  .pcard.tier-2::before { background:var(--s2); }
+  .pcard.tier-1::before { background:var(--muted2); }
 
-    .stat-label {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
+  .pcard-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .pcard-name { font-size:13px; font-weight:700; color:#fff; line-height:1.2; }
+  .pcard-sub { font-size:11px; color:var(--muted); margin-top:3px; }
+  .pcard-ovr {
+    flex-shrink:0;
+    width:42px; height:42px; border-radius:8px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .pcard-ovr-val { font-family:'Bebas Neue',sans-serif; font-size:18px; line-height:1; color:#fff; }
+  .pcard-ovr-lbl { font-size:8px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
 
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 900;
-      letter-spacing: -0.05em;
-    }
+  .pcard-bottom { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+  .pcard-stars { display:flex; gap:3px; }
+  .pstar {
+    width:10px; height:10px;
+    clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+    background: var(--surface3);
+    transition: background .12s;
+  }
+  .pstar.on.tier-5 { background:var(--s5); }
+  .pstar.on.tier-4 { background:var(--s4); }
+  .pstar.on.tier-3 { background:var(--s3); }
+  .pstar.on.tier-2 { background:var(--s2); }
+  .pstar.on.tier-1 { background:var(--muted); }
 
-    .stat-note {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
+  .pcard-tag {
+    font-size:9px; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; padding:2px 7px; border-radius:4px;
+  }
+  .pcard-tag.t5 { background:var(--s5-dim); color:var(--s5); border:1px solid rgba(245,158,11,.25); }
+  .pcard-tag.t4 { background:var(--s4-dim); color:var(--s4); border:1px solid rgba(96,165,250,.22); }
+  .pcard-tag.t3 { background:var(--s3-dim); color:var(--s3); border:1px solid rgba(34,197,94,.2); }
+  .pcard-tag.t2 { background:var(--s2-dim); color:var(--s2); border:1px solid rgba(167,139,250,.2); }
+  .pcard-tag.t1 { background:var(--s1-dim); color:var(--muted); border:1px solid rgba(86,86,106,.25); }
 
-    .controls {
-      display: grid;
-      grid-template-columns: 1.35fr 0.75fr 0.75fr 0.75fr 0.9fr;
-      gap: 12px;
-      margin: 18px 0 12px;
-    }
+  /* ── ELIGIBILITY TABLE (info section) ── */
+  .info-grid {
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+    margin-bottom:20px;
+  }
+  @media (max-width:700px) { .info-grid { grid-template-columns:1fr; } }
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius:12px; overflow:hidden;
+  }
+  .info-card-head {
+    padding:9px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    font-size:10px; font-weight:700; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--muted);
+  }
+  .info-card-body { padding:14px; }
 
-    .control {
-      width: 100%;
-      background: var(--panel2);
-      border: 1px solid rgba(255, 45, 45, 0.18);
-      border-radius: 16px;
-      padding: 14px 16px;
-      color: var(--text);
-      outline: none;
-      font-size: 14px;
-    }
+  .elig-table { width:100%; border-collapse:collapse; }
+  .elig-table th {
+    font-size:9px; font-weight:700; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--muted);
+    padding:5px 8px; text-align:left;
+    border-bottom:1px solid var(--border);
+  }
+  .elig-table th:not(:first-child) { text-align:center; }
+  .elig-table td {
+    padding:6px 8px;
+    border-bottom: 1px solid var(--border2);
+    font-size:12px;
+  }
+  .elig-table tr:last-child td { border-bottom:none; }
+  .elig-table td:not(:first-child) { text-align:center; }
+  .elig-check { color:#22c55e; font-size:13px; }
+  .elig-dash  { color:var(--muted2); font-size:11px; }
+  .elig-x     { color:#f87171; font-size:11px; }
 
-    .control::placeholder { color: #8b7777; }
-    select.control { appearance: none; cursor: pointer; }
+  .rule-list { display:flex; flex-direction:column; gap:8px; }
+  .rule-item {
+    display:flex; align-items:flex-start; gap:10px;
+    padding:9px 10px; border-radius:8px;
+    background:var(--surface2); border:1px solid var(--border2);
+    font-size:12px; color:var(--text); line-height:1.5;
+  }
+  .rule-icon { font-size:14px; flex-shrink:0; margin-top:1px; }
 
-    .letters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 8px 0 16px;
-    }
+  /* ── EMPTY STATE ── */
+  .empty {
+    display:none; text-align:center;
+    padding: 48px 20px; color:var(--muted);
+  }
+  .empty.show { display:block; }
+  .empty-title { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:.04em; color:var(--muted2); margin-bottom:6px; }
 
-    .letter {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 34px;
-      height: 34px;
-      padding: 0 10px;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 45, 45, 0.18);
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text);
-      font-size: 13px;
-      cursor: pointer;
-      user-select: none;
-    }
+  /* ── TOAST ── */
+  #toasts {
+    position:fixed; bottom:20px; right:16px;
+    display:flex; flex-direction:column-reverse; gap:8px;
+    z-index:9999; pointer-events:none;
+    max-width: min(300px, calc(100vw - 32px));
+  }
+  .toast {
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-left:3px solid var(--red);
+    border-radius:8px; padding:10px 14px;
+    font-size:13px; color:#fff;
+    box-shadow:0 8px 32px rgba(0,0,0,.5);
+    pointer-events:all;
+    animation:toastIn .22s ease;
+  }
+  .toast.green { border-left-color:#22c55e; }
+  @keyframes toastIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 
-    .letter.active {
-      border-color: rgba(255, 45, 45, 0.44);
-      background: rgba(255, 45, 45, 0.14);
-      box-shadow: 0 0 0 1px rgba(255, 45, 45, 0.08) inset;
-    }
+  /* ── MOBILE tweaks ── */
+  @media (max-width:640px) {
+    .hero { padding:20px 0 18px; }
+    .checker-body { flex-direction:column; }
+    .stats-bar { gap:7px; }
+    .pcard-name { font-size:12px; }
+    .pcard-sub { font-size:10px; }
+  }
 
-    .section-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin: 16px 0 12px;
-    }
+  /* Discord section */
+  .discord-section {
+    background: linear-gradient(135deg, rgba(88,101,242,.1), rgba(88,101,242,.04));
+    border: 1px solid rgba(88,101,242,.25);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:20px;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  }
+  .discord-section-icon { font-size:24px; flex-shrink:0; }
+  .discord-section-text { flex:1; min-width:180px; }
+  .discord-section-title { font-size:13px; font-weight:700; color:#8b95f5; margin-bottom:3px; }
+  .discord-section-sub { font-size:11px; color:var(--muted); line-height:1.5; }
+  .discord-section-btn {
+    padding: 8px 16px; border-radius:8px;
+    background: rgba(88,101,242,.25);
+    border: 1px solid rgba(88,101,242,.4);
+    color: #8b95f5; font-size:12px; font-weight:700;
+    cursor:pointer; white-space:nowrap; text-decoration:none;
+    transition: background .15s;
+  }
+  .discord-section-btn:hover { background:rgba(88,101,242,.38); }
 
-    .section-head h2 {
-      margin: 0;
-      font-size: 18px;
-      letter-spacing: -0.03em;
-    }
-
-    .small {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .player {
-      padding: 18px;
-      background: linear-gradient(180deg, rgba(22, 0, 0, 0.94), rgba(10, 10, 10, 0.96));
-      border: 1px solid rgba(255, 45, 45, 0.16);
-      border-radius: 18px;
-      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-      min-height: 188px;
-    }
-
-    .player:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255, 45, 45, 0.4);
-      box-shadow: 0 18px 38px rgba(0, 0, 0, 0.42);
-    }
-
-    .player.top-tier {
-      background:
-        radial-gradient(circle at top right, rgba(255, 210, 77, 0.18), transparent 28%),
-        linear-gradient(180deg, rgba(32, 0, 0, 0.98), rgba(10, 10, 10, 0.98));
-      border-color: rgba(255, 210, 77, 0.26);
-    }
-
-    .player.superstar {
-      border-color: rgba(255, 90, 90, 0.32);
-      box-shadow: 0 0 0 1px rgba(255, 45, 45, 0.06) inset;
-    }
-
-    .player-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .name {
-      font-weight: 900;
-      font-size: 16px;
-      letter-spacing: -0.02em;
-    }
-
-    .team {
-      font-size: 12px;
-      color: #d0bcbc;
-      margin-top: 4px;
-      line-height: 1.35;
-    }
-
-    .overall-badge {
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-width: 72px;
-      border-radius: 16px;
-      padding: 10px 12px;
-      border: 1px solid rgba(255, 45, 45, 0.28);
-      background: linear-gradient(180deg, rgba(255, 45, 45, 0.24), rgba(0, 0, 0, 0.35));
-      text-align: center;
-    }
-
-    .overall-badge span {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: #ffcece;
-      font-weight: 800;
-    }
-
-    .overall-badge strong {
-      font-size: 23px;
-      line-height: 1;
-      margin-top: 2px;
-      letter-spacing: -0.05em;
-    }
-
-    .star-row {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      min-width: 86px;
-    }
-
-    .star {
-      width: 14px;
-      height: 14px;
-      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 72%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-      background: #3b1b1b;
-    }
-
-    .star.active {
-      background: linear-gradient(180deg, #ffd75c, #ffaf1a);
-      box-shadow: 0 0 12px rgba(255, 175, 26, 0.35);
-    }
-
-    .meta {
-      display: grid;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .meta-item {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      font-size: 13px;
-    }
-
-    .meta-item span:first-child { color: #b9aaaa; }
-
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      width: fit-content;
-      border: 1px solid transparent;
-      letter-spacing: 0.01em;
-    }
-
-    .tag.elite {
-      background: rgba(255, 210, 77, 0.14);
-      color: #ffe6a1;
-      border-color: rgba(255, 210, 77, 0.24);
-    }
-
-    .tag.star {
-      background: rgba(255, 45, 45, 0.13);
-      color: #ffd4d4;
-      border-color: rgba(255, 45, 45, 0.24);
-    }
-
-    .tag.starter {
-      background: rgba(255, 90, 90, 0.11);
-      color: #ffbaba;
-      border-color: rgba(255, 90, 90, 0.22);
-    }
-
-    .tag.rotation {
-      background: rgba(255, 45, 45, 0.08);
-      color: #e6c0c0;
-      border-color: rgba(255, 45, 45, 0.16);
-    }
-
-    .tag.role {
-      background: rgba(255, 255, 255, 0.04);
-      color: #d6c9c9;
-      border-color: rgba(255, 255, 255, 0.08);
-    }
-
-    .empty {
-      padding: 40px 20px;
-      text-align: center;
-      color: var(--muted);
-      background: rgba(16, 16, 16, 0.65);
-      border: 1px dashed rgba(255, 45, 45, 0.18);
-      border-radius: 18px;
-    }
-
-    .footer {
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 12px;
-      text-align: center;
-      line-height: 1.6;
-    }
-
-    .footer strong {
-      color: #ffe1e1;
-    }
-
-    @media (max-width: 1120px) {
-      .hero { grid-template-columns: 1fr; }
-      .controls { grid-template-columns: 1fr 1fr 1fr; }
-      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
-    @media (max-width: 720px) {
-      .wrap { padding: 18px 12px 44px; }
-      .hero-main { padding: 20px; }
-      .controls { grid-template-columns: 1fr; }
-      .grid { grid-template-columns: 1fr; }
-      .section-head { flex-direction: column; align-items: flex-start; }
-      .player-top { align-items: flex-start; }
-    }
-  </style>
+  /* User result card (Discord) */
+  .user-result-card {
+    display:none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius:12px;
+    margin-bottom:20px;
+    overflow:hidden;
+  }
+  .user-result-card.show { display:block; }
+  .urc-head {
+    display:flex; align-items:center; gap:10px;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .urc-avatar {
+    width:36px; height:36px; border-radius:50%;
+    background: var(--surface3);
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:700; color:var(--muted);
+    overflow:hidden; flex-shrink:0;
+  }
+  .urc-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+  .urc-name { font-size:14px; font-weight:700; color:#fff; }
+  .urc-sub  { font-size:11px; color:var(--muted); margin-top:1px; }
+  .urc-body { padding:14px 16px; display:flex; flex-wrap:wrap; gap:14px; }
+  .urc-star-section { flex:1; min-width:140px; }
+  .urc-star-label { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .urc-elig-section { flex:2; min-width:200px; }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="hero">
-      <section class="card hero-main">
-        <div class="badge">★ RPL Player Browser • NBA 2K Style</div>
-        <h1>Browse Every Active NBA Player</h1>
-        <p class="subtitle">
-          A clean player browser built for the full active roster list. Each player has a 2K-style overall rating, plus a star tier for quick league browsing.
-        </p>
-      </section>
 
-      <aside class="hero-side">
-        <div class="card stat-box">
-          <div class="stat-label">Loaded Players</div>
-          <div class="stat-value" id="totalPlayers">0</div>
-          <div class="stat-note">Every active player in the roster file.</div>
-        </div>
-        <div class="card stat-box">
-          <div class="stat-label">Filtered Players</div>
-          <div class="stat-value" id="filteredPlayers">0</div>
-          <div class="stat-note">Players shown after search and filters.</div>
-        </div>
-      </aside>
-    </div>
+<nav>
+  <div class="nav-left">
+    <div class="nav-logo">R</div>
+    <span class="nav-title"><em>RPL</em> Star System</span>
+    <span class="nav-pill">Season 11</span>
+  </div>
+  <div class="nav-right">
+    <a class="discord-btn" id="discord-login-btn" href="#" onclick="initiateDiscordLogin(event)">
+      <svg width="14" height="11" viewBox="0 0 14 11" fill="currentColor"><path d="M11.86 1.04A11.6 11.6 0 0 0 9.0.2a.04.04 0 0 0-.05.02c-.12.22-.25.5-.35.72a10.7 10.7 0 0 0-3.2 0A7.4 7.4 0 0 0 5.05.22.05.05 0 0 0 5 .2 11.56 11.56 0 0 0 2.14 1.04a.05.05 0 0 0-.02.02C.31 3.76-.19 6.42.06 9.05a.05.05 0 0 0 .02.03 11.66 11.66 0 0 0 3.5 1.77.05.05 0 0 0 .06-.02c.27-.37.51-.76.72-1.17a.05.05 0 0 0-.03-.07 7.68 7.68 0 0 1-1.1-.52.05.05 0 0 1 0-.08c.07-.06.15-.12.22-.17a.05.05 0 0 1 .05-.01c2.3 1.05 4.79 1.05 7.06 0a.05.05 0 0 1 .05.01c.07.05.15.11.22.17a.05.05 0 0 1 0 .08 7.22 7.22 0 0 1-1.1.52.05.05 0 0 0-.02.07c.21.41.46.8.72 1.17a.05.05 0 0 0 .06.02 11.62 11.62 0 0 0 3.5-1.77.05.05 0 0 0 .02-.03c.3-3.08-.5-5.72-2.1-8.01a.04.04 0 0 0-.02-.01Z"/></svg>
+      <span id="discord-btn-text">Check My Roles</span>
+    </a>
+  </div>
+</nav>
 
-    <div class="controls">
-      <input id="search" class="control" type="text" placeholder="Search player, team, position, or country..." />
-      <select id="teamFilter" class="control">
-        <option value="all">All Teams</option>
-      </select>
-      <select id="positionFilter" class="control">
-        <option value="all">All Positions</option>
-        <option value="G">G</option>
-        <option value="F">F</option>
-        <option value="C">C</option>
-        <option value="G-F">G-F</option>
-        <option value="F-G">F-G</option>
-        <option value="F-C">F-C</option>
-        <option value="C-F">C-F</option>
-      </select>
-      <select id="ratingFilter" class="control">
-        <option value="all">All Star Tiers</option>
-        <option value="5">5 Stars</option>
-        <option value="4">4 Stars</option>
-        <option value="3">3 Stars</option>
-        <option value="2">2 Stars</option>
-        <option value="1">1 Star</option>
-      </select>
-      <select id="sortFilter" class="control">
-        <option value="ovr_desc">Overall: High to Low</option>
-        <option value="ovr_asc">Overall: Low to High</option>
-        <option value="alpha_asc">Name: A to Z</option>
-        <option value="alpha_desc">Name: Z to A</option>
-        <option value="team_asc">Team: A to Z</option>
-      </select>
-    </div>
+<div class="page">
 
-    <div id="letters" class="letters"></div>
-
-    <div class="section-head">
-      <h2>Player List</h2>
-      <div class="small" id="resultCount">0 results</div>
-    </div>
-
-    <div id="playerGrid" class="grid"></div>
-    <div id="emptyState" class="empty" style="display:none;">
-      No players match your search.
-    </div>
-
-    <div class="footer">
-      <strong>2K overalls</strong> are loaded from the official ratings file; duplicate entries are removed and unrated players are excluded.
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-title"><em>RPL</em> Star System</div>
+        <div class="hero-sub">Player ratings · Role eligibility · Season 11 · 537 active players</div>
+      </div>
+      <div class="star-legend">
+        <div class="sl-item s5"><div class="sl-stars"><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div></div>5★ Elite</div>
+        <div class="sl-item s4"><div class="sl-stars"><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div></div>4★ All-Star</div>
+        <div class="sl-item s3"><div class="sl-stars"><div class="sl-dot"></div><div class="sl-dot"></div><div class="sl-dot"></div></div>3★ Starter</div>
+        <div class="sl-item s2"><div class="sl-stars"><div class="sl-dot"></div><div class="sl-dot"></div></div>2★ Role</div>
+        <div class="sl-item s1"><div class="sl-stars"><div class="sl-dot"></div></div>1★ Fringe</div>
+      </div>
     </div>
   </div>
 
-  <script>
-    const players = [
+  <!-- DISCORD USER RESULT (shown after OAuth) -->
+  <div class="user-result-card" id="user-result-card">
+    <div class="urc-head">
+      <div class="urc-avatar" id="urc-avatar">?</div>
+      <div>
+        <div class="urc-name" id="urc-name">—</div>
+        <div class="urc-sub" id="urc-sub">Your RPL star rating</div>
+      </div>
+    </div>
+    <div class="urc-body">
+      <div class="urc-star-section">
+        <div class="urc-star-label">Your Star Rating</div>
+        <div id="urc-star-badge">—</div>
+        <div style="margin-top:8px;" id="urc-stars-row"></div>
+      </div>
+      <div class="urc-elig-section">
+        <div class="urc-star-label">Role Eligibility</div>
+        <div id="urc-roles" class="cr-roles"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-card-head">📊 Role Eligibility Matrix</div>
+      <div class="info-card-body">
+        <table class="elig-table">
+          <thead>
+            <tr>
+              <th>Your Stars</th>
+              <th>5★</th><th>4★</th><th>3★</th><th>2★</th><th>1★</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="pcard-tag t5">5★ Elite</span></td>
+              <td><span class="elig-check">✓</span></td>
+              <td><span class="elig-check">✓</span></td>
+              <td><span class="elig-check">✓</span></td>
+              <td><span class="elig-x">✗</span></td>
+              <td><span class="elig-x">✗</span></td>
+            </tr>
+            <tr>
+              <td><span class="pcard-tag t4">4★ All-Star</span></td>
+              <td><span class="elig-x">✗</span></td>
+              <td><span class="elig-check">✓</span></td>
+              <td><span class="elig-check">✓</span></td>
+              <td><span class="elig-check">✓</span></td>
+              <td><span class="elig-x">✗</span></td>
+            </tr>
+            <tr>
+              <td><span class="pcard-tag t3">3★ Starter</span></td>
+              <td><span class="elig-x">✗</span></td>
+              <td><span class="elig-x">✗</span></td>
+              <td><span class="elig-check">✓</span></td>
+              <td><span class="elig-check">✓</span></td>
+              <td><span class="elig-check">✓</span></td>
+            </tr>
+            <tr>
+              <td><span class="pcard-tag t2">2★ Role</span></td>
+              <td><span class="elig-x">✗</span></td>
+              <td><span class="elig-x">✗</span></td>
+              <td><span class="elig-x">✗</span></td>
+              <td><span class="elig-check">✓</span></td>
+              <td><span class="elig-check">✓</span></td>
+            </tr>
+            <tr>
+              <td><span class="pcard-tag t1">1★ Fringe</span></td>
+              <td><span class="elig-x">✗</span></td>
+              <td><span class="elig-x">✗</span></td>
+              <td><span class="elig-x">✗</span></td>
+              <td><span class="elig-x">✗</span></td>
+              <td><span class="elig-check">✓</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:10px; font-size:11px; color:var(--muted); line-height:1.6;">
+          ✓ Eligible &nbsp;·&nbsp; ✗ Not allowed (overqualified or below threshold)
+        </div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-head">📌 How Stars Are Earned</div>
+      <div class="info-card-body">
+        <div class="rule-list">
+          <div class="rule-item"><span class="rule-icon">⚡</span><span><strong>Consistency</strong> — Multiple strong games across the season. One good match doesn't move your rating.</span></div>
+          <div class="rule-item"><span class="rule-icon">🏆</span><span><strong>Winning impact</strong> — Real contributions to your team's success, not just personal stats.</span></div>
+          <div class="rule-item"><span class="rule-icon">🎯</span><span><strong>Role realism</strong> — Playing your position correctly and fitting your playstyle.</span></div>
+          <div class="rule-item"><span class="rule-icon">🔒</span><span><strong>No demanding</strong> — Stars are evaluated by staff. Requesting or pressuring for stars will be noted negatively.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYER LOOKUP CHECKER -->
+  <div class="checker-panel">
+    <div class="checker-head">
+      <div class="checker-dot"></div>
+      <span class="checker-head-label">Quick Player Lookup</span>
+    </div>
+    <div class="checker-body">
+      <div class="checker-left">
+        <div class="checker-label">Search by name</div>
+        <input class="checker-input" id="checker-input" type="text" placeholder="e.g. LeBron James" autocomplete="off">
+      </div>
+      <div class="checker-result" id="checker-result">
+        <div class="cr-name" id="cr-name">—</div>
+        <div class="cr-star-row">
+          <span class="cr-star-badge" id="cr-badge">—</span>
+          <span class="cr-ovr" id="cr-ovr"></span>
+        </div>
+        <div class="cr-eligibility-label">Can walk-on as:</div>
+        <div class="cr-roles" id="cr-roles"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat-pill"><div class="stat-pill-label">Total Players</div><div class="stat-pill-val" id="stat-total">537</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">Showing</div><div class="stat-pill-val" id="stat-showing">537</div></div>
+    <div class="stat-pill"><div class="stat-pill-label">5★ Elite</div><div class="stat-pill-val" id="stat-5"></div></div>
+    <div class="stat-pill"><div class="stat-pill-label">4★ All-Star</div><div class="stat-pill-val" id="stat-4"></div></div>
+    <div class="stat-pill"><div class="stat-pill-label">3★ Starter</div><div class="stat-pill-val" id="stat-3"></div></div>
+    <div class="stat-pill"><div class="stat-pill-label">2★ + 1★</div><div class="stat-pill-val" id="stat-low"></div></div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <div class="filters-head">
+      <span class="filters-label">Filters</span>
+      <span class="result-count"><strong id="result-count">537</strong> results</span>
+    </div>
+    <div class="filters-body">
+      <div class="filter-group" style="flex:2; min-width:160px;">
+        <label class="filter-label">Search</label>
+        <input class="filter-input" id="search" type="text" placeholder="Name, team, position, country…" autocomplete="off">
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Team</label>
+        <select class="filter-select" id="teamFilter"><option value="all">All Teams</option></select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Position</label>
+        <select class="filter-select" id="positionFilter">
+          <option value="all">All Positions</option>
+          <option value="G">Guard (G)</option>
+          <option value="F">Forward (F)</option>
+          <option value="C">Center (C)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Stars</label>
+        <select class="filter-select" id="ratingFilter">
+          <option value="all">All Stars</option>
+          <option value="5">5★ Elite</option>
+          <option value="4">4★ All-Star</option>
+          <option value="3">3★ Starter</option>
+          <option value="2">2★ Role</option>
+          <option value="1">1★ Fringe</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Sort</label>
+        <select class="filter-select" id="sortFilter">
+          <option value="ovr_desc">Rating ↓</option>
+          <option value="ovr_asc">Rating ↑</option>
+          <option value="alpha_asc">A → Z</option>
+          <option value="alpha_desc">Z → A</option>
+          <option value="team_asc">Team</option>
+        </select>
+      </div>
+    </div>
+    <div class="filters-letters" id="letters"></div>
+  </div>
+
+  <!-- PLAYER GRID -->
+  <div class="player-grid" id="playerGrid"></div>
+  <div class="empty" id="empty">
+    <div class="empty-title">No Players Found</div>
+    <div style="font-size:13px;">Try a different search or filter.</div>
+  </div>
+
+</div>
+
+<div id="toasts"></div>
+
+<script>
+// ── DATA ──
+const players = [
   {
     "name": "Kyrie Irving",
     "team": "DAL",
@@ -6387,202 +6644,364 @@
   }
 ];
 
-    const officialOveralls = {"Kyrie Irving":90,"Cooper Flagg":88,"Naji Marshall":81,"P.J. Washington":80,"Daniel Gafford":80,"Brandon Williams":80,"Marvin Bagley III":79,"Dereck Lively II":79,"Klay Thompson":78,"Max Christie":77,"Khris Middleton":76,"Ryan Nembhard":75,"Caleb Martin":75,"Dwight Powell":74,"Moussa Cisse":73,"A.J. Johnson":72,"John Poulakidas":71,"Tyler Smith":69,"Nikola Jokić":98,"Jamal Murray":91,"Aaron Gordon":84,"Peyton Watson":82,"Christian Braun":81,"Cameron Johnson":80,"Tim Hardaway Jr.":80,"Jonas Valančiūnas":79,"Julian Strawther":77,"Bruce Brown":75,"Spencer Jones":73,"Jalen Pickett":73,"Tyus Jones":73,"Zeke Nnaji":73,"DaRon Holmes II":73,"K.J. Simpson":73,"David Roddy":71,"Curtis Jones":68,"Stephen Curry":95,"Jimmy Butler":88,"Kristaps Porziņģis":83,"Brandin Podziemski":81,"Gui Santos":80,"Gary Payton II":79,"De'Anthony Melton":79,"Draymond Green":79,"Moses Moody":79,"Al Horford":79,"Pat Spencer":76,"Quinten Post":76,"Will Richard":75,"L.J. Cryer":74,"Nate Williams":74,"Seth Curry":74,"Charles Bassey":72,"Omer Yurtseven":71,"Malevy Leons":70,"Kevin Durant":93,"Alperen Şengün":88,"Amen Thompson":87,"Reed Sheppard":82,"Jabari Smith Jr.":82,"Fred VanVleet":80,"Tari Eason":79,"Clint Capela":77,"Steven Adams":77,"Josh Okogie":75,"Dorian Finney-Smith":75,"Aaron Holiday":74,"Jeff Green":73,"Jae'Sean Tate":73,"JD Davison":69,"Isaiah Crawford":68,"Tristen Newton":68,"Kawhi Leonard":95,"Darius Garland":85,"Bennedict Mathurin":82,"John Collins":81,"Derrick Jones Jr.":79,"Brook Lopez":78,"Kris Dunn":77,"Isaiah Jackson":77,"Jordan Miller":77,"Bradley Beal":77,"Kobe Sanders":76,"Yanic Konan Niederhäuser":75,"Bogdan Bogdanović":74,"Nicolas Batum":74,"Cam Christie":70,"TyTy Washington Jr.":70,"Norchad Omier":68,"Sean Pedulla":68,"Luka Dončić":97,"LeBron James":92,"Austin Reaves":88,"Deandre Ayton":80,"Jaxson Hayes":79,"Marcus Smart":78,"Rui Hachimura":78,"Luke Kennard":77,"Jarred Vanderbilt":76,"Jake LaRavia":76,"Maxi Kleber":74,"Dalton Knecht":74,"Nick Smith Jr.":73,"Drew Timme":72,"Bronny James Jr.":71,"Kobe Bufkin":71,"Adou Thiero":70,"Chris Mañon":68,"Ja Morant":87,"Ty Jerome":83,"Zach Edey":82,"Santi Aldama":81,"G.G. Jackson":80,"Cedric Coward":80,"Cam Spencer":79,"Jaylen Wells":79,"Olivier-Maxence Prosper":78,"Brandon Clarke":78,"Javon Small":77,"Scotty Pippen Jr.":77,"Walter Clayton Jr.":75,"Kentavious Caldwell-Pope":75,"Taylor Hendricks":75,"Rayan Rupert":74,"Jahmai Mashack":73,"Dariq Whitehead":72,"Taj Gibson":70,"Adama Bal":68,"Anthony Edwards":96,"Julius Randle":86,"Rudy Gobert":85,"Jaden McDaniels":83,"Ayo Dosunmu":81,"Naz Reid":81,"Donte DiVincenzo":79,"Nah'Shon Hyland":78,"Mike Conley":75,"Kyle Anderson":75,"Jaylen Clark":73,"Terrence Shannon Jr.":73,"Joe Ingles":73,"Joan Beringer":72,"Julian Phillips":72,"Enrique Freeman":69,"Rocco Zikarsky":68,"Zyon Pullin":67,"Zion Williamson":86,"Trey Murphy III":85,"Saddiq Bey":84,"Dejounte Murray":84,"Jeremiah Fears":80,"Derik Queen":80,"Herbert Jones":79,"Yves Missi":78,"DeAndre Jordan":76,"Karlo Matković":76,"Jordan Poole":76,"Bryce McGowens":75,"Kevon Looney":74,"Jordan Hawkins":72,"Micah Peavy":72,"Trey Alexander":68,"Hunter Dickinson":68,"Josh Oduro":68,"Shai Gilgeous-Alexander":98,"Jalen Williams":87,"Chet Holmgren":87,"Isaiah Hartenstein":83,"Cason Wallace":82,"Ajay Mitchell":82,"Luguentz Dort":80,"Isaiah Joe":80,"Jaylin Williams":80,"Alex Caruso":79,"Aaron Wiggins":78,"Jared McCain":78,"Kenrich Williams":78,"Nikola Topic":73,"Branden Carlson":73,"Thomas Sorber":71,"Brooks Barnhizer":69,"Payton Sandfort":68,"Devin Booker":93,"Dillon Brooks":84,"Jalen Green":82,"Mark Williams":82,"Collin Gillespie":81,"Grayson Allen":81,"Royce O'Neale":77,"Oso Ighodaro":77,"Jordan Goodwin":77,"Rasheer Fleming":76,"Khaman Maluach":75,"Ryan Dunn":75,"Amir Coffey":74,"Jamaree Bouyea":74,"Haywood Highsmith":73,"Isaiah Livers":71,"Koby Brea":68,"CJ Huntley":68,"Deni Avdija":88,"Damian Lillard":88,"Shaedon Sharpe":85,"Donovan Clingan":84,"Toumani Camara":82,"Jrue Holiday":82,"Jerami Grant":82,"Scoot Henderson":80,"Robert Williams III":79,"Matisse Thybulle":76,"Vít Krejčí":75,"Caleb Love":75,"Kris Murray":74,"Sidy Cissoko":74,"Blake Wesley":73,"Hansen Yang":70,"Chris Youngblood":68,"Jayson Kent":68,"Victor Wembanyama":97,"Stephon Castle":87,"De'Aaron Fox":85,"Devin Vassell":82,"Dylan Harper":81,"Julian Champagnie":79,"Keldon Johnson":79,"Harrison Barnes":78,"Luke Kornet":77,"Mason Plumlee":76,"Kelly Olynyk":75,"Carter Bryant":75,"Lindy Waters III":73,"Jordan McLaughlin":72,"David Jones-Garcia":71,"Bismack Biyombo":70,"Harrison Ingram":69,"Emanuel Miller":68,"Domantas Sabonis":86,"DeMar DeRozan":84,"Zach LaVine":83,"Maxime Raynaud":81,"Russell Westbrook":81,"Malik Monk":80,"Precious Achiuwa":79,"Keegan Murray":79,"De'Andre Hunter":79,"Nique Clifford":77,"Dylan Cardwell":77,"Devin Carter":77,"Drew Eubanks":75,"Daeqwon Plowden":73,"Killian Hayes":72,"Patrick Baldwin Jr.":71,"Doug McDermott":71,"Isaiah Stevens":68,"Keyonte George":87,"Lauri Markkanen":87,"Jaren Jackson Jr.":86,"Walker Kessler":83,"Isaiah Collier":82,"Jusuf Nurkić":82,"Brice Sensabaugh":81,"Ace Bailey":81,"Kyle Filipowski":79,"John Konchar":76,"Cody Williams":76,"Sviatoslav Mykhailiuk":76,"Kevin Love":76,"Oscar Tshiebwe":73,"Blake Hinson":73,"Kennedy Chandler":72,"Elijah Harkless":72,"Bez Mbeng":69,"Jalen Johnson":90,"Nickeil Alexander-Walker":86,"C.J. McCollum":83,"Dyson Daniels":83,"Onyeka Okongwu":82,"Jonathan Kuminga":79,"Jock Landale":78,"Zaccharie Risacher":77,"Corey Kispert":76,"Buddy Hield":75,"Asa Newell":75,"Mouhamed Gueye":74,"Gabe Vincent":73,"Tony Bradley":73,"Christian Koloko":73,"Keaton Wallace":72,"RayJ Dennis":71,"Keshon Gilbert":68,"Michael Porter Jr.":86,"Nicolas Claxton":81,"Josh Minott":78,"Ziaire Williams":78,"Egor Demin":78,"Day'Ron Sharpe":78,"Nolan Traore":77,"Noah Clowney":77,"Danny Wolf":77,"Terance Mann":76,"Ben Saraf":75,"Ochai Agbaji":75,"Jalen Wilson":74,"Chaney Johnson":73,"Drake Powell":73,"Malachi Smith":72,"Tyson Etienne":72,"E.J. Liddell":70,"Trevon Scott":67,"Jaylen Brown":95,"Jayson Tatum":93,"Derrick White":86,"Nikola Vucevic":82,"Payton Pritchard":82,"Neemias Queta":81,"Luka Garza":78,"Sam Hauser":78,"Jordan Walsh":76,"Baylor Scheierman":76,"Hugo Gonzalez":75,"Ron Harper Jr.":73,"Amari Williams":69,"John Tonje":69,"Max Shulga":68,"LaMelo Ball":88,"Brandon Miller":87,"Kon Knueppel":86,"Miles Bridges":81,"Coby White":81,"Moussa Diabate":80,"Ryan Kalkbrenner":80,"Grant Williams":76,"Josh Green":75,"Sion James":75,"Tidjane Salaun":75,"Tre Mann":74,"Pat Connaughton":73,"Liam McNeeley":72,"Xavier Tillman Sr.":72,"P.J. Hall":72,"Antonio Reeves":70,"Tosan Evbuomwan":70,"Josh Giddey":83,"Matas Buzelis":82,"Tre Jones":81,"Collin Sexton":81,"Anfernee Simons":80,"Jalen Smith":79,"Isaac Okoro":77,"Zach Collins":77,"Leonard Miller":76,"Guerschon Yabusele":76,"Nick Richards":75,"Patrick Williams":75,"Robert Dillingham":73,"Yuki Kawamura":72,"Noa Essengue":72,"Mac McClung":71,"Lachlan Olbrich":70,"Donovan Mitchell":95,"James Harden":90,"Evan Mobley":87,"Jarrett Allen":86,"Jaylon Tyson":80,"Max Strus":79,"Sam Merrill":78,"Dean Wade":78,"Dennis Schröder":77,"Keon Ellis":77,"Thomas Bryant":76,"Nae'Qwan Tomlin":74,"Craig Porter Jr.":74,"Larry Nance Jr.":73,"Tyrese Proctor":73,"Tristan Enaruna":68,"Olivier Sarr":68,"Riley Minix":67,"Cade Cunningham":95,"Jalen Duren":89,"Ausar Thompson":84,"Daniss Jenkins":82,"Tobias Harris":81,"Duncan Robinson":80,"Isaiah Stewart":80,"Ron Holland":79,"Javonte Green":78,"Kevin Huerter":77,"Paul Reed":77,"Caris LeVert":76,"Marcus Sasser":76,"Isaac Jones":71,"Wendell Moore Jr.":70,"Bobi Klintman":69,"Chaz Lanier":68,"Tolu Smith":67,"Tyrese Haliburton":93,"Pascal Siakam":87,"Ivica Zubac":85,"Andrew Nembhard":82,"Jarace Walker":81,"T.J. McConnell":81,"Aaron Nesmith":80,"Obi Toppin":80,"Jay Huff":79,"Kobe Brown":76,"Quenton Jackson":76,"Micah Potter":76,"Ben Sheppard":75,"Kam Jones":74,"Johnny Furphy":74,"Jalen Slawson":73,"Ethan Thompson":73,"Taelon Peter":73,"Bam Adebayo":89,"Tyler Herro":87,"Norman Powell":85,"Andrew Wiggins":81,"Jaime Jaquez Jr.":80,"Pelle Larsson":80,"Kel'el Ware":80,"Davion Mitchell":79,"Simone Fontecchio":77,"Kasparas Jakucionis":76,"Myron Gardner":75,"Dru Smith":75,"Nikola Jović":74,"Terry Rozier III":74,"Keshad Johnson":72,"Vladislav Goldin":68,"Trevor Keels":68,"Jahmir Young":67,"Giannis Antetokounmpo":97,"Ryan Rollins":82,"Kevin Porter Jr.":82,"Kyle Kuzma":80,"Bobby Portis Jr.":80,"Myles Turner":78,"Ousmane Dieng":77,"A.J. Green":76,"Taurean Prince":76,"Gary Trent Jr.":75,"Pete Nance":74,"Jericho Sims":74,"Gary Harris":73,"Cormac Ryan":72,"Andre Jackson Jr.":72,"Thanasis Antetokounmpo":69,"Alex Antetokounmpo":68,"Jalen Brunson":93,"Karl-Anthony Towns":90,"OG Anunoby":86,"Mikal Bridges":83,"Josh Hart":82,"Mitchell Robinson":80,"Miles McBride":79,"Jose Alvarado":78,"Jordan Clarkson":77,"Landry Shamet":77,"Jeremy Sochan":74,"Tyler Kolek":74,"Mohamed Diawara":74,"Ariel Hukporti":73,"Kevin McCullar Jr.":71,"Trey Jemison III":71,"Pacome Dadiet":69,"Dillon Jones":69,"Franz Wagner":87,"Desmond Bane":86,"Paolo Banchero":86,"Anthony Black":82,"Jalen Suggs":82,"Wendell Carter Jr.":80,"Tristan Da Silva":79,"Goga Bitadze":77,"Moritz Wagner":77,"Noah Penda":75,"Jevon Carter":75,"Jamal Cain":74,"Jett Howard":74,"Jase Richardson":73,"Jonathan Isaac":73,"Colin Castleton":70,"Alex Morales":68,"Tyrese Maxey":93,"Joel Embiid":92,"V.J. Edgecombe":83,"Paul George":83,"Kelly Oubre Jr.":80,"Quentin Grimes":79,"Justin Edwards":76,"Dominick Barlow":76,"Andre Drummond":76,"Trendon Watford":76,"Adem Bona":75,"Cameron Payne":75,"Tyrese Martin":73,"Kyle Lowry":73,"Dalen Terry":73,"Jabari Walker":72,"MarJon Beauchamp":70,"Johni Broome":70,"Brandon Ingram":86,"Scottie Barnes":86,"Immanuel Quickley":84,"R.J. Barrett":83,"Jakob Poeltl":80,"Collin Murray-Boyles":80,"Sandro Mamukelashvili":79,"Jamal Shead":78,"Ja'Kobe Walter":77,"Gradey Dick":76,"A.J. Lawson":74,"Jonathan Mogbo":74,"Trayce Jackson-Davis":73,"Jamison Battle":73,"Markelle Fultz":71,"Alijah Martin":71,"Garrett Temple":70,"Chucky Hepburn":68,"Anthony Davis":92,"Trae Young":89,"Alexandre Sarr":84,"Kyshawn George":82,"Will Riley":81,"Bilal Coulibaly":79,"Tre Johnson":78,"Carlton Carrington":78,"Justin Champagnie":78,"Tristan Vukcevic":77,"Julian Reese":76,"Jamir Watkins":76,"Jaden Hardy":76,"D'Angelo Russell":76,"Cam Whitmore":75,"Sharife Cooper":74,"Anthony Gill":74,"Leaky Black":73};
+const officialOveralls = {"Kyrie Irving":90,"Cooper Flagg":88,"Naji Marshall":81,"P.J. Washington":80,"Daniel Gafford":80,"Brandon Williams":80,"Marvin Bagley III":79,"Dereck Lively II":79,"Klay Thompson":78,"Max Christie":77,"Khris Middleton":76,"Ryan Nembhard":75,"Caleb Martin":75,"Dwight Powell":74,"Moussa Cisse":73,"A.J. Johnson":72,"John Poulakidas":71,"Tyler Smith":69,"Nikola Jokić":98,"Jamal Murray":91,"Aaron Gordon":84,"Peyton Watson":82,"Christian Braun":81,"Cameron Johnson":80,"Tim Hardaway Jr.":80,"Jonas Valančiūnas":79,"Julian Strawther":77,"Bruce Brown":75,"Spencer Jones":73,"Jalen Pickett":73,"Tyus Jones":73,"Zeke Nnaji":73,"DaRon Holmes II":73,"K.J. Simpson":73,"David Roddy":71,"Curtis Jones":68,"Stephen Curry":95,"Jimmy Butler":88,"Kristaps Porziņģis":83,"Brandin Podziemski":81,"Gui Santos":80,"Gary Payton II":79,"De'Anthony Melton":79,"Draymond Green":79,"Moses Moody":79,"Al Horford":79,"Pat Spencer":76,"Quinten Post":76,"Will Richard":75,"L.J. Cryer":74,"Nate Williams":74,"Seth Curry":74,"Charles Bassey":72,"Omer Yurtseven":71,"Malevy Leons":70,"Kevin Durant":93,"Alperen Şengün":88,"Amen Thompson":87,"Reed Sheppard":82,"Jabari Smith Jr.":82,"Fred VanVleet":80,"Tari Eason":79,"Clint Capela":77,"Steven Adams":77,"Josh Okogie":75,"Dorian Finney-Smith":75,"Aaron Holiday":74,"Jeff Green":73,"Jae'Sean Tate":73,"JD Davison":69,"Isaiah Crawford":68,"Tristen Newton":68,"Kawhi Leonard":95,"Darius Garland":85,"Bennedict Mathurin":82,"John Collins":81,"Derrick Jones Jr.":79,"Brook Lopez":78,"Kris Dunn":77,"Isaiah Jackson":77,"Jordan Miller":77,"Bradley Beal":77,"Kobe Sanders":76,"Yanic Konan Niederhäuser":75,"Bogdan Bogdanović":74,"Nicolas Batum":74,"Cam Christie":70,"TyTy Washington Jr.":70,"Norchad Omier":68,"Sean Pedulla":68,"Luka Dončić":97,"LeBron James":92,"Austin Reaves":88,"Deandre Ayton":80,"Jaxson Hayes":79,"Marcus Smart":78,"Rui Hachimura":78,"Luke Kennard":77,"Jarred Vanderbilt":76,"Jake LaRavia":76,"Maxi Kleber":74,"Dalton Knecht":74,"Nick Smith Jr.":73,"Drew Timme":72,"Bronny James Jr.":71,"Kobe Bufkin":71,"Adou Thiero":70,"Chris Mañon":68,"Ja Morant":87,"Ty Jerome":83,"Zach Edey":82,"Santi Aldama":81,"G.G. Jackson":80,"Cedric Coward":80,"Cam Spencer":79,"Jaylen Wells":79,"Olivier-Maxence Prosper":78,"Brandon Clarke":78,"Javon Small":77,"Scotty Pippen Jr.":77,"Walter Clayton Jr.":75,"Kentavious Caldwell-Pope":75,"Taylor Hendricks":75,"Rayan Rupert":74,"Jahmai Mashack":73,"Dariq Whitehead":72,"Taj Gibson":70,"Adama Bal":68,"Anthony Edwards":96,"Julius Randle":86,"Rudy Gobert":85,"Jaden McDaniels":83,"Ayo Dosunmu":81,"Naz Reid":81,"Donte DiVincenzo":79,"Nah'Shon Hyland":78,"Mike Conley":75,"Kyle Anderson":75,"Jaylen Clark":73,"Terrence Shannon Jr.":73,"Joe Ingles":73,"Joan Beringer":72,"Julian Phillips":72,"Enrique Freeman":69,"Rocco Zikarsky":68,"Zyon Pullin":67,"Zion Williamson":86,"Trey Murphy III":85,"Saddiq Bey":84,"Dejounte Murray":84,"Jeremiah Fears":80,"Derik Queen":80,"Herbert Jones":79,"Yves Missi":78,"DeAndre Jordan":76,"Karlo Matković":76,"Jordan Poole":76,"Bryce McGowens":75,"Kevon Looney":74,"Jordan Hawkins":72,"Micah Peavy":72,"Trey Alexander":68,"Hunter Dickinson":68,"Josh Oduro":68,"Shai Gilgeous-Alexander":98,"Jalen Williams":87,"Chet Holmgren":87,"Isaiah Hartenstein":83,"Cason Wallace":82,"Ajay Mitchell":82,"Luguentz Dort":80,"Isaiah Joe":80,"Jaylin Williams":80,"Alex Caruso":79,"Aaron Wiggins":78,"Jared McCain":78,"Kenrich Williams":78,"Nikola Topic":73,"Branden Carlson":73,"Thomas Sorber":71,"Brooks Barnhizer":69,"Payton Sandfort":68,"Devin Booker":93,"Dillon Brooks":84,"Jalen Green":82,"Mark Williams":82,"Collin Gillespie":81,"Grayson Allen":81,"Royce O'Neale":77,"Oso Ighodaro":77,"Jordan Goodwin":77,"Rasheer Fleming":76,"Khaman Maluach":75,"Ryan Dunn":75,"Amir Coffey":74,"Jamaree Bouyea":74,"Haywood Highsmith":73,"Isaiah Livers":71,"Koby Brea":68,"CJ Huntley":68,"Deni Avdija":88,"Damian Lillard":88,"Shaedon Sharpe":85,"Donovan Clingan":84,"Toumani Camara":82,"Jrue Holiday":82,"Jerami Grant":82,"Scoot Henderson":80,"Robert Williams III":79,"Matisse Thybulle":76,"Vít Krejčí":75,"Caleb Love":75,"Kris Murray":74,"Sidy Cissoko":74,"Blake Wesley":73,"Hansen Yang":70,"Chris Youngblood":68,"Jayson Kent":68,"Victor Wembanyama":97,"Stephon Castle":87,"De'Aaron Fox":85,"Devin Vassell":82,"Dylan Harper":81,"Julian Champagnie":79,"Keldon Johnson":79,"Harrison Barnes":78,"Luke Kornet":77,"Mason Plumlee":76,"Kelly Olynyk":75,"Carter Bryant":75,"Lindy Waters III":73,"Jordan McLaughlin":72,"David Jones-Garcia":71,"Bismack Biyombo":70,"Harrison Ingram":69,"Emanuel Miller":68,"Domantas Sabonis":86,"DeMar DeRozan":84,"Zach LaVine":83,"Maxime Raynaud":81,"Russell Westbrook":81,"Malik Monk":80,"Precious Achiuwa":79,"Keegan Murray":79,"De'Andre Hunter":79,"Nique Clifford":77,"Dylan Cardwell":77,"Devin Carter":77,"Drew Eubanks":75,"Daeqwon Plowden":73,"Killian Hayes":72,"Patrick Baldwin Jr.":71,"Doug McDermott":71,"Isaiah Stevens":68,"Keyonte George":87,"Lauri Markkanen":87,"Jaren Jackson Jr.":86,"Walker Kessler":83,"Isaiah Collier":82,"Jusuf Nurkić":82,"Brice Sensabaugh":81,"Ace Bailey":81,"Kyle Filipowski":79,"John Konchar":76,"Cody Williams":76,"Sviatoslav Mykhailiuk":76,"Kevin Love":76,"Oscar Tshiebwe":73,"Blake Hinson":73,"Kennedy Chandler":72,"Elijah Harkless":72,"Bez Mbeng":69,"Jalen Johnson":90,"Nickeil Alexander-Walker":86,"C.J. McCollum":83,"Dyson Daniels":83,"Onyeka Okongwu":82,"Jonathan Kuminga":79,"Jock Landale":78,"Zaccharie Risacher":77,"Corey Kispert":76,"Buddy Hield":75,"Asa Newell":75,"Mouhamed Gueye":74,"Gabe Vincent":73,"Tony Bradley":73,"Christian Koloko":73,"Keaton Wallace":72,"RayJ Dennis":71,"Keshon Gilbert":68,"Michael Porter Jr.":86,"Nicolas Claxton":81,"Josh Minott":78,"Ziaire Williams":78,"Egor Demin":78,"Day'Ron Sharpe":78,"Nolan Traore":77,"Noah Clowney":77,"Danny Wolf":77,"Terance Mann":76,"Ben Saraf":75,"Ochai Agbaji":75,"Jalen Wilson":74,"Chaney Johnson":73,"Drake Powell":73,"Malachi Smith":72,"Tyson Etienne":72,"E.J. Liddell":70,"Trevon Scott":67,"Jaylen Brown":95,"Jayson Tatum":93,"Derrick White":86,"Nikola Vucevic":82,"Payton Pritchard":82,"Neemias Queta":81,"Luka Garza":78,"Sam Hauser":78,"Jordan Walsh":76,"Baylor Scheierman":76,"Hugo Gonzalez":75,"Ron Harper Jr.":73,"Amari Williams":69,"John Tonje":69,"Max Shulga":68,"LaMelo Ball":88,"Brandon Miller":87,"Kon Knueppel":86,"Miles Bridges":81,"Coby White":81,"Moussa Diabate":80,"Ryan Kalkbrenner":80,"Grant Williams":76,"Josh Green":75,"Sion James":75,"Tidjane Salaun":75,"Tre Mann":74,"Pat Connaughton":73,"Liam McNeeley":72,"Xavier Tillman Sr.":72,"P.J. Hall":72,"Antonio Reeves":70,"Tosan Evbuomwan":70,"Josh Giddey":83,"Matas Buzelis":82,"Tre Jones":81,"Collin Sexton":81,"Anfernee Simons":80,"Jalen Smith":79,"Isaac Okoro":77,"Zach Collins":77,"Leonard Miller":76,"Guerschon Yabusele":76,"Nick Richards":75,"Patrick Williams":75,"Robert Dillingham":73,"Yuki Kawamura":72,"Noa Essengue":72,"Mac McClung":71,"Lachlan Olbrich":70,"Donovan Mitchell":95,"James Harden":90,"Evan Mobley":87,"Jarrett Allen":86,"Jaylon Tyson":80,"Max Strus":79,"Sam Merrill":78,"Dean Wade":78,"Dennis Schröder":77,"Keon Ellis":77,"Thomas Bryant":76,"Nae'Qwan Tomlin":74,"Craig Porter Jr.":74,"Larry Nance Jr.":73,"Tyrese Proctor":73,"Tristan Enaruna":68,"Olivier Sarr":68,"Riley Minix":67,"Cade Cunningham":95,"Jalen Duren":89,"Ausar Thompson":84,"Daniss Jenkins":82,"Tobias Harris":81,"Duncan Robinson":80,"Isaiah Stewart":80,"Ron Holland":79,"Javonte Green":78,"Kevin Huerter":77,"Paul Reed":77,"Caris LeVert":76,"Marcus Sasser":76,"Isaac Jones":71,"Wendell Moore Jr.":70,"Bobi Klintman":69,"Chaz Lanier":68,"Tolu Smith":67,"Tyrese Haliburton":93,"Pascal Siakam":87,"Ivica Zubac":85,"Andrew Nembhard":82,"Jarace Walker":81,"T.J. McConnell":81,"Aaron Nesmith":80,"Obi Toppin":80,"Jay Huff":79,"Kobe Brown":76,"Quenton Jackson":76,"Micah Potter":76,"Ben Sheppard":75,"Kam Jones":74,"Johnny Furphy":74,"Jalen Slawson":73,"Ethan Thompson":73,"Taelon Peter":73,"Bam Adebayo":89,"Tyler Herro":87,"Norman Powell":85,"Andrew Wiggins":81,"Jaime Jaquez Jr.":80,"Pelle Larsson":80,"Kel'el Ware":80,"Davion Mitchell":79,"Simone Fontecchio":77,"Kasparas Jakucionis":76,"Myron Gardner":75,"Dru Smith":75,"Nikola Jović":74,"Terry Rozier III":74,"Keshad Johnson":72,"Vladislav Goldin":68,"Trevor Keels":68,"Jahmir Young":67,"Giannis Antetokounmpo":97,"Ryan Rollins":82,"Kevin Porter Jr.":82,"Kyle Kuzma":80,"Bobby Portis Jr.":80,"Myles Turner":78,"Ousmane Dieng":77,"A.J. Green":76,"Taurean Prince":76,"Gary Trent Jr.":75,"Pete Nance":74,"Jericho Sims":74,"Gary Harris":73,"Cormac Ryan":72,"Andre Jackson Jr.":72,"Thanasis Antetokounmpo":69,"Alex Antetokounmpo":68,"Jalen Brunson":93,"Karl-Anthony Towns":90,"OG Anunoby":86,"Mikal Bridges":83,"Josh Hart":82,"Mitchell Robinson":80,"Miles McBride":79,"Jose Alvarado":78,"Jordan Clarkson":77,"Landry Shamet":77,"Jeremy Sochan":74,"Tyler Kolek":74,"Mohamed Diawara":74,"Ariel Hukporti":73,"Kevin McCullar Jr.":71,"Trey Jemison III":71,"Pacome Dadiet":69,"Dillon Jones":69,"Franz Wagner":87,"Desmond Bane":86,"Paolo Banchero":86,"Anthony Black":82,"Jalen Suggs":82,"Wendell Carter Jr.":80,"Tristan Da Silva":79,"Goga Bitadze":77,"Moritz Wagner":77,"Noah Penda":75,"Jevon Carter":75,"Jamal Cain":74,"Jett Howard":74,"Jase Richardson":73,"Jonathan Isaac":73,"Colin Castleton":70,"Alex Morales":68,"Tyrese Maxey":93,"Joel Embiid":92,"V.J. Edgecombe":83,"Paul George":83,"Kelly Oubre Jr.":80,"Quentin Grimes":79,"Justin Edwards":76,"Dominick Barlow":76,"Andre Drummond":76,"Trendon Watford":76,"Adem Bona":75,"Cameron Payne":75,"Tyrese Martin":73,"Kyle Lowry":73,"Dalen Terry":73,"Jabari Walker":72,"MarJon Beauchamp":70,"Johni Broome":70,"Brandon Ingram":86,"Scottie Barnes":86,"Immanuel Quickley":84,"R.J. Barrett":83,"Jakob Poeltl":80,"Collin Murray-Boyles":80,"Sandro Mamukelashvili":79,"Jamal Shead":78,"Ja'Kobe Walter":77,"Gradey Dick":76,"A.J. Lawson":74,"Jonathan Mogbo":74,"Trayce Jackson-Davis":73,"Jamison Battle":73,"Markelle Fultz":71,"Alijah Martin":71,"Garrett Temple":70,"Chucky Hepburn":68,"Anthony Davis":92,"Trae Young":89,"Alexandre Sarr":84,"Kyshawn George":82,"Will Riley":81,"Bilal Coulibaly":79,"Tre Johnson":78,"Carlton Carrington":78,"Justin Champagnie":78,"Tristan Vukcevic":77,"Julian Reese":76,"Jamir Watkins":76,"Jaden Hardy":76,"D'Angelo Russell":76,"Cam Whitmore":75,"Sharife Cooper":74,"Anthony Gill":74,"Leaky Black":73};
 
-    const tierNames = {
-      5: "5 Star",
-      4: "4 Star",
-      3: "3 Star",
-      2: "2 Star",
-      1: "1 Star"
-    };
+// ── STAR SYSTEM CONFIG ──
+// Stars are defined purely by the player's official "rating" field (1–5)
+// The OVR is for display only; stars come from the rating field.
+// Eligibility: a player can walk-on roles within their star ± 1 (but never 2+ below their star)
+// Rule from Discord announcement:
+//   5★ → can play 3–5★ roles
+//   4★ → can play 3–5★ roles  (note: 5★ would be overqualified for 4*, let's read as: can play their star ±1 but not 2+ below)
+//   3★ → can play 2–4★ roles
+//   2★ → can play 1–3★ roles  (wait actually the rule says 1-3)
+//   1★ → can play 0–2★ roles (0 = unrated, effectively 1–2 only in practice)
+// Simplified: eligible range = [max(1, star-1), min(5, star+1)] with the caveat that 5/4★ share the same top bracket
+// From the announcement, exact mapping:
+const ELIGIBLE_RANGES = {
+  5: [3, 5],  // 5★ → 3,4,5★ roles
+  4: [3, 5],  // 4★ → 3,4,5★ roles (1 above = 5★ still eligible, per announcement)
+  3: [2, 4],
+  2: [1, 3],
+  1: [1, 2],  // 1★ → 0–2★ effectively 1–2
+};
 
-    const teamNames = {
-      "FA": "Free Agent"
-    };
+const STAR_NAMES = { 5:'Elite', 4:'All-Star', 3:'Starter', 2:'Role Player', 1:'Fringe' };
+const STAR_CLASS = { 5:'t5', 4:'t4', 3:'t3', 2:'t2', 1:'t1' };
+const STAR_CSS   = { 5:'s5', 4:'s4', 3:'s3', 2:'s2', 1:'s1' };
 
-    const teamOrder = {};
-    const lettersWrap = document.getElementById("letters");
-    const search = document.getElementById("search");
-    const teamFilter = document.getElementById("teamFilter");
-    const positionFilter = document.getElementById("positionFilter");
-    const ratingFilter = document.getElementById("ratingFilter");
-    const sortFilter = document.getElementById("sortFilter");
-    const grid = document.getElementById("playerGrid");
-    const emptyState = document.getElementById("emptyState");
-    const totalPlayers = document.getElementById("totalPlayers");
-    const filteredPlayers = document.getElementById("filteredPlayers");
-    const resultCount = document.getElementById("resultCount");
+// ── HELPERS ──
+function hashString(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h) ^ str.charCodeAt(i);
+  return Math.abs(h >>> 0);
+}
 
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-    let activeLetter = "ALL";
+function getOVR(player) {
+  if (officialOveralls[player.name] != null) return officialOveralls[player.name];
+  const tier = Number(player.rating || 1);
+  const ranges = { 5:[82,95], 4:[76,84], 3:[70,78], 2:[64,71], 1:[60,63] };
+  const [min, max] = ranges[tier] || ranges[3];
+  const seed = hashString(`${player.name}|${player.team}|${player.position}`);
+  return min + (seed % (max - min + 1));
+}
 
-    function hashString(str) {
-      let h = 0;
-      for (let i = 0; i < str.length; i++) {
-        h = ((h << 5) - h) + str.charCodeAt(i);
-        h |= 0;
+function getStarTier(player) {
+  // Use the player's explicit rating field as the canonical star tier
+  return Number(player.rating) || 1;
+}
+
+function starsHtml(tier, size=10) {
+  const cls = STAR_CSS[tier];
+  return Array.from({length:5}, (_,i) =>
+    `<div class="pstar${i < tier ? ' on '+'tier-'+tier : ''}" style="width:${size}px;height:${size}px;"></div>`
+  ).join('');
+}
+
+function eligibilityRoles(tier) {
+  const [lo, hi] = ELIGIBLE_RANGES[tier] || [1, 2];
+  return [5,4,3,2,1].map(r => ({
+    role: r,
+    eligible: r >= lo && r <= hi,
+    overqualified: r < lo,
+    below: r > hi,
+  }));
+}
+
+// ── CHECKER ──
+const checkerInput = document.getElementById('checker-input');
+const checkerResult = document.getElementById('checker-result');
+const crName = document.getElementById('cr-name');
+const crBadge = document.getElementById('cr-badge');
+const crOvr = document.getElementById('cr-ovr');
+const crRoles = document.getElementById('cr-roles');
+
+let checkerTimeout = null;
+checkerInput.addEventListener('input', () => {
+  clearTimeout(checkerTimeout);
+  checkerTimeout = setTimeout(runChecker, 180);
+});
+
+function runChecker() {
+  const q = checkerInput.value.trim().toLowerCase();
+  if (!q) { checkerResult.classList.remove('show'); return; }
+  const found = players.find(p => p.name.toLowerCase().includes(q));
+  if (!found) {
+    crName.textContent = 'Player not found';
+    crBadge.textContent = '—';
+    crBadge.className = 'cr-star-badge';
+    crOvr.textContent = '';
+    crRoles.innerHTML = '<span class="cr-not-found">Try a different name.</span>';
+    checkerResult.classList.add('show');
+    return;
+  }
+  const tier = getStarTier(found);
+  const ovr  = getOVR(found);
+  crName.textContent = found.name;
+  crBadge.textContent = `${tier}★ ${STAR_NAMES[tier]}`;
+  crBadge.className = `cr-star-badge ${STAR_CSS[tier]}`;
+  crOvr.textContent = `OVR ${ovr} · ${found.team} · ${found.position}`;
+  const roles = eligibilityRoles(tier);
+  crRoles.innerHTML = roles.map(r => {
+    if (r.eligible) return `<span class="cr-role eligible">${r.role}★ ✓</span>`;
+    if (r.overqualified) return `<span class="cr-role overqualified">${r.role}★ overqualified</span>`;
+    return `<span class="cr-role below">${r.role}★ below</span>`;
+  }).join('');
+  checkerResult.classList.add('show');
+}
+
+// ── STATS ──
+function computeStats(list) {
+  const counts = {5:0,4:0,3:0,2:0,1:0};
+  list.forEach(p => counts[getStarTier(p)]++);
+  document.getElementById('stat-showing').textContent = list.length;
+  document.getElementById('stat-5').textContent = counts[5];
+  document.getElementById('stat-4').textContent = counts[4];
+  document.getElementById('stat-3').textContent = counts[3];
+  document.getElementById('stat-low').textContent = counts[2] + counts[1];
+}
+
+// ── FILTERS ──
+const searchEl = document.getElementById('search');
+const teamFilterEl = document.getElementById('teamFilter');
+const posFilterEl  = document.getElementById('positionFilter');
+const ratFilterEl  = document.getElementById('ratingFilter');
+const sortFilterEl = document.getElementById('sortFilter');
+const gridEl = document.getElementById('playerGrid');
+const emptyEl = document.getElementById('empty');
+const resultCountEl = document.getElementById('result-count');
+const lettersEl = document.getElementById('letters');
+
+let activeLetter = 'ALL';
+
+function populateTeams() {
+  const teams = [...new Set(players.map(p => p.team||'FA'))].sort();
+  teams.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t; opt.textContent = t === 'FA' ? 'Free Agent' : t;
+    teamFilterEl.appendChild(opt);
+  });
+}
+
+function renderLetters() {
+  const usedLetters = new Set(players.map(p => p.name[0].toUpperCase()));
+  const allLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const btns = ['<button class="letter-btn' + (activeLetter==='ALL'?' active':'')+'" data-l="ALL">All</button>'];
+  allLetters.forEach(l => {
+    if (!usedLetters.has(l)) return;
+    btns.push(`<button class="letter-btn${activeLetter===l?' active':''}" data-l="${l}">${l}</button>`);
+  });
+  lettersEl.innerHTML = btns.join('');
+  lettersEl.querySelectorAll('.letter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeLetter = btn.dataset.l;
+      renderLetters();
+      renderGrid();
+    });
+  });
+}
+
+function sortPlayers(list) {
+  const key = sortFilterEl.value;
+  const copy = [...list];
+  if (key==='ovr_asc')   return copy.sort((a,b)=>getOVR(a)-getOVR(b)||a.name.localeCompare(b.name));
+  if (key==='alpha_asc') return copy.sort((a,b)=>a.name.localeCompare(b.name));
+  if (key==='alpha_desc')return copy.sort((a,b)=>b.name.localeCompare(a.name));
+  if (key==='team_asc')  return copy.sort((a,b)=>(a.team||'FA').localeCompare(b.team||'FA')||a.name.localeCompare(b.name));
+  return copy.sort((a,b)=>getOVR(b)-getOVR(a)||a.name.localeCompare(b.name)); // default ovr_desc
+}
+
+function renderGrid() {
+  const q   = searchEl.value.trim().toLowerCase();
+  const tf  = teamFilterEl.value;
+  const pf  = posFilterEl.value;
+  const rf  = ratFilterEl.value;
+
+  const filtered = players.filter(p => {
+    if (q && ![p.name, p.team, p.position, p.country].join(' ').toLowerCase().includes(q)) return false;
+    if (tf !== 'all' && p.team !== tf) return false;
+    if (pf !== 'all' && p.position !== pf) return false;
+    if (rf !== 'all' && String(p.rating) !== rf) return false;
+    if (activeLetter !== 'ALL' && p.name[0].toUpperCase() !== activeLetter) return false;
+    return true;
+  });
+
+  const sorted = sortPlayers(filtered);
+  resultCountEl.textContent = sorted.length;
+  document.getElementById('stat-total').textContent = players.length;
+  computeStats(sorted);
+
+  if (!sorted.length) {
+    gridEl.innerHTML = '';
+    emptyEl.classList.add('show');
+    return;
+  }
+  emptyEl.classList.remove('show');
+
+  gridEl.innerHTML = sorted.map(p => {
+    const tier = getStarTier(p);
+    const ovr  = getOVR(p);
+    const tierCls = 'tier-' + tier;
+    const tagCls  = STAR_CLASS[tier];
+    return `<div class="pcard ${tierCls}">
+      <div class="pcard-top">
+        <div>
+          <div class="pcard-name">${p.name}</div>
+          <div class="pcard-sub">${p.team==='FA'?'Free Agent':p.team} · ${p.position||'—'} · ${p.country||'N/A'}</div>
+        </div>
+        <div class="pcard-ovr">
+          <div class="pcard-ovr-val">${ovr}</div>
+          <div class="pcard-ovr-lbl">OVR</div>
+        </div>
+      </div>
+      <div class="pcard-bottom">
+        <div class="pcard-stars">${starsHtml(tier)}</div>
+        <span class="pcard-tag ${tagCls}">${tier}★ ${STAR_NAMES[tier]}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+searchEl.addEventListener('input', renderGrid);
+teamFilterEl.addEventListener('change', renderGrid);
+posFilterEl.addEventListener('change', renderGrid);
+ratFilterEl.addEventListener('change', renderGrid);
+sortFilterEl.addEventListener('change', renderGrid);
+
+// Init
+populateTeams();
+renderLetters();
+renderGrid();
+
+// Count initial stars in stats bar
+const allCounts = {5:0,4:0,3:0,2:0,1:0};
+players.forEach(p => allCounts[getStarTier(p)]++);
+document.getElementById('stat-5').textContent = allCounts[5];
+document.getElementById('stat-4').textContent = allCounts[4];
+document.getElementById('stat-3').textContent = allCounts[3];
+document.getElementById('stat-low').textContent = allCounts[2]+allCounts[1];
+
+// ── DISCORD INTEGRATION ──
+// Star role IDs from Discord announcement:
+const STAR_ROLE_IDS = {
+  '1494550847730745415': 5,
+  '1494550790163927193': 4,
+  '1494550741824573553': 3,
+  '1494550692260741270': 2,
+  '1494550644944666724': 1,
+};
+
+const DISCORD_CLIENT_ID = 'YOUR_DISCORD_CLIENT_ID'; // ← Replace with your Discord App client ID
+const REDIRECT_URI = encodeURIComponent(window.location.origin + window.location.pathname);
+
+function initiateDiscordLogin(e) {
+  e.preventDefault();
+  const scopes = encodeURIComponent('identify guilds.members.read');
+  const state = crypto.randomUUID();
+  sessionStorage.setItem('discord_state', state);
+  const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${scopes}&state=${state}`;
+  // Open in a popup so the user stays on the star page
+  const popup = window.open(url, 'discord-auth', 'width=480,height=720,menubar=no,toolbar=no');
+  if (!popup) window.location.href = url; // fallback if popup blocked
+}
+
+// Handle Discord OAuth implicit flow callback (token in hash)
+async function handleDiscordCallback() {
+  const hash = window.location.hash.slice(1);
+  if (!hash.includes('access_token')) return;
+  const params = new URLSearchParams(hash);
+  const token = params.get('access_token');
+  const state = params.get('state');
+  if (!token) return;
+  // Clear hash from URL
+  history.replaceState(null, '', window.location.pathname);
+  await loadDiscordUser(token);
+}
+
+async function loadDiscordUser(token) {
+  document.getElementById('discord-btn-text').textContent = 'Loading…';
+  try {
+    const GUILD_ID = 'YOUR_GUILD_ID'; // ← Replace with your Discord server/guild ID
+
+    const [userRes, memberRes] = await Promise.all([
+      fetch('https://discord.com/api/users/@me', { headers:{ Authorization:`Bearer ${token}` } }),
+      fetch(`https://discord.com/api/users/@me/guilds/${GUILD_ID}/member`, { headers:{ Authorization:`Bearer ${token}` } }),
+    ]);
+
+    const user   = await userRes.json();
+    const member = await memberRes.json();
+
+    if (!member.roles) {
+      toast('Could not read your server roles. Make sure you are in the RPL Discord.', 'amber');
+      document.getElementById('discord-btn-text').textContent = 'Check My Roles';
+      return;
+    }
+
+    // Find which star role they have
+    let starTier = null;
+    for (const roleId of member.roles) {
+      if (STAR_ROLE_IDS[roleId] !== undefined) {
+        starTier = STAR_ROLE_IDS[roleId];
+        break;
       }
-      return Math.abs(h);
     }
 
-    function starsHtml(count) {
-      let html = "";
-      for (let i = 1; i <= 5; i++) {
-        html += `<span class="star ${i <= count ? "active" : ""}"></span>`;
-      }
-      return html;
-    }
+    showUserResult(user, member, starTier);
+    document.getElementById('discord-btn-text').textContent = 'Checked ✓';
 
-    function overallFromTier(player) {
-      if (officialOveralls[player.name] != null) {
-        return officialOveralls[player.name];
-      }
+  } catch(err) {
+    console.error(err);
+    toast('Could not load your Discord data.');
+    document.getElementById('discord-btn-text').textContent = 'Check My Roles';
+  }
+}
 
-      const tier = Number(player.rating || 1);
-      const ranges = {
-        5: [82, 95],
-        4: [76, 84],
-        3: [70, 78],
-        2: [64, 71],
-        1: [60, 63],
-      };
+function showUserResult(user, member, starTier) {
+  const card = document.getElementById('user-result-card');
+  const avatarEl = document.getElementById('urc-avatar');
+  const nameEl = document.getElementById('urc-name');
+  const subEl = document.getElementById('urc-sub');
+  const badgeEl = document.getElementById('urc-star-badge');
+  const starsRowEl = document.getElementById('urc-stars-row');
+  const rolesEl = document.getElementById('urc-roles');
 
-      const [min, max] = ranges[tier] || ranges[3];
-      const spread = max - min;
-      const seed = hashString(`${player.name}|${player.team}|${player.position}|${player.country}|${player.last_attended}`);
-      return min + (seed % (spread + 1));
-    }
+  // Avatar
+  if (user.avatar) {
+    avatarEl.innerHTML = `<img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" alt="">`;
+  } else {
+    avatarEl.textContent = (user.username||'?')[0].toUpperCase();
+  }
 
-    function starsFromOverall(ovr) {
-      if (ovr >= 95) return 5;
-      if (ovr >= 89) return 4;
-      if (ovr >= 80) return 3;
-      if (ovr >= 64) return 2;
-      return 1;
-    }
+  nameEl.textContent = member.nick || user.global_name || user.username;
+  subEl.textContent = `@${user.username}`;
 
-    function labelForOverall(ovr) {
-      if (ovr >= 96) return ["elite", "Superstar"];
-      if (ovr >= 90) return ["elite", "All-NBA"];
-      if (ovr >= 85) return ["star", "All-Star"];
-      if (ovr >= 80) return ["starter", "Starter"];
-      if (ovr >= 72) return ["rotation", "Rotation"];
-      return ["role", "Role Player"];
-    }
+  if (!starTier) {
+    badgeEl.innerHTML = '<span style="color:var(--muted);font-size:12px;">No star role assigned yet</span>';
+    starsRowEl.innerHTML = '';
+    rolesEl.innerHTML = '<span style="color:var(--muted);font-size:12px;">Contact staff to have your star rating assigned.</span>';
+  } else {
+    badgeEl.innerHTML = `<span class="cr-star-badge ${STAR_CSS[starTier]}">${starTier}★ ${STAR_NAMES[starTier]}</span>`;
+    starsRowEl.innerHTML = `<div class="pcard-stars">${starsHtml(starTier, 12)}</div>`;
+    const roles = eligibilityRoles(starTier);
+    rolesEl.innerHTML = roles.map(r => {
+      if (r.eligible) return `<span class="cr-role eligible">${r.role}★ – can walk-on</span>`;
+      if (r.overqualified) return `<span class="cr-role overqualified">${r.role}★ – overqualified</span>`;
+      return ''; // below = not worth showing
+    }).join('');
+  }
 
-    function sortPlayers(list) {
-      switch (sortFilter.value) {
-        case "ovr_asc":
-          return [...list].sort((a, b) => a.ovr - b.ovr || a.name.localeCompare(b.name));
-        case "alpha_asc":
-          return [...list].sort((a, b) => a.name.localeCompare(b.name));
-        case "alpha_desc":
-          return [...list].sort((a, b) => b.name.localeCompare(a.name));
-        case "team_asc":
-          return [...list].sort((a, b) => (a.team || "FA").localeCompare(b.team || "FA") || a.name.localeCompare(b.name));
-        case "ovr_desc":
-        default:
-          return [...list].sort((a, b) => b.ovr - a.ovr || a.name.localeCompare(b.name));
-      }
-    }
+  card.classList.add('show');
+  card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
 
-    function renderLetters() {
-      const buttons = [`<div class="letter ${activeLetter === "ALL" ? "active" : ""}" data-letter="ALL">All</div>`]
-        .concat(letters.map(letter => `<div class="letter ${activeLetter === letter ? "active" : ""}" data-letter="${letter}">${letter}</div>`))
-        .join("");
-      lettersWrap.innerHTML = buttons;
-      lettersWrap.querySelectorAll(".letter").forEach(el => {
-        el.addEventListener("click", () => {
-          activeLetter = el.dataset.letter;
-          renderLetters();
-          render();
-        });
-      });
-    }
+function toast(msg, type='red') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`; t.textContent = msg;
+  document.getElementById('toasts').prepend(t);
+  setTimeout(() => t.remove(), 5000);
+}
 
-    function populateTeams() {
-      const teams = [...new Set(players.map(p => p.team || "FA"))].sort();
-      for (const team of teams) {
-        const opt = document.createElement("option");
-        opt.value = team;
-        opt.textContent = teamNames[team] || team;
-        teamFilter.appendChild(opt);
-      }
-    }
-
-    function render() {
-      const q = search.value.trim().toLowerCase();
-      const tf = teamFilter.value;
-      const pf = positionFilter.value;
-      const rf = ratingFilter.value;
-
-      const decorated = players.map(p => ({
-        ...p,
-        ovr: overallFromTier(p),
-      }));
-
-      const filtered = decorated.filter(p => {
-        const textMatch = !q || [
-          p.name, p.team, p.position, p.country, p.height, p.last_attended, String(p.ovr)
-        ].join(" ").toLowerCase().includes(q);
-
-        const teamMatch = tf === "all" || p.team === tf;
-        const posMatch = pf === "all" || p.position === pf;
-        const ratingMatch = rf === "all" || String(p.rating) === rf;
-        const letterMatch = activeLetter === "ALL" || p.name[0].toUpperCase() === activeLetter;
-
-        return textMatch && teamMatch && posMatch && ratingMatch && letterMatch;
-      });
-
-      const sorted = sortPlayers(filtered);
-
-      grid.innerHTML = sorted.map(p => {
-        const [tagClass, tagText] = labelForOverall(p.ovr);
-        const starCount = starsFromOverall(p.ovr);
-        return `
-        <article class="player ${p.ovr >= 90 ? "top-tier" : ""} ${p.ovr >= 85 && p.ovr < 90 ? "superstar" : ""}">
-          <div class="player-top">
-            <div>
-              <div class="name">${p.name}</div>
-              <div class="team">${p.team === "FA" ? "Free Agent" : p.team} • ${p.position || "—"} • ${p.country || "N/A"}</div>
-            </div>
-            <div class="overall-badge" aria-label="${p.ovr} overall">
-              <span>OVR</span>
-              <strong>${p.ovr}</strong>
-            </div>
-          </div>
-
-          <div class="meta">
-            <div class="meta-item"><span>Star Tier</span><strong>${tierNames[p.rating] || `${p.rating} Star`}</strong></div>
-            <div class="meta-item"><span>Height</span><strong>${p.height || "—"}</strong></div>
-            <div class="meta-item"><span>Last Attended</span><strong>${p.last_attended || "—"}</strong></div>
-          </div>
-
-          <div class="star-row" aria-label="${starCount} star rating">
-            ${starsHtml(starCount)}
-          </div>
-
-          <div style="height:12px;"></div>
-          <span class="tag ${tagClass}">${tagText}</span>
-        </article>
-      `}).join("");
-
-      emptyState.style.display = sorted.length ? "none" : "block";
-      totalPlayers.textContent = players.length;
-      filteredPlayers.textContent = sorted.length;
-      resultCount.textContent = `${sorted.length} result${sorted.length === 1 ? "" : "s"}`;
-    }
-
-    search.addEventListener("input", render);
-    teamFilter.addEventListener("change", render);
-    positionFilter.addEventListener("change", render);
-    ratingFilter.addEventListener("change", render);
-    sortFilter.addEventListener("change", render);
-
-    populateTeams();
-    renderLetters();
-    render();
-  </script>
+handleDiscordCallback();
+</script>
 </body>
 </html>

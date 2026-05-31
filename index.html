@@ -6891,7 +6891,7 @@ const STAR_ROLE_IDS = {
   '1494550644944666724': 1,
 };
 
-const DISCORD_CLIENT_ID = 'YOUR_DISCORD_CLIENT_ID'; // ← Replace with your Discord App client ID
+const DISCORD_CLIENT_ID = '1507116566536523858'; // ← Replace with your Discord App client ID
 const REDIRECT_URI = encodeURIComponent(window.location.origin + window.location.pathname);
 
 function initiateDiscordLogin(e) {
@@ -6921,7 +6921,7 @@ async function handleDiscordCallback() {
 async function loadDiscordUser(token) {
   document.getElementById('discord-btn-text').textContent = 'Loading…';
   try {
-    const GUILD_ID = 'YOUR_GUILD_ID'; // ← Replace with your Discord server/guild ID
+    const GUILD_ID = '1405981824588578926'; // ← Replace with your Discord server/guild ID
 
     const [userRes, memberRes] = await Promise.all([
       fetch('https://discord.com/api/users/@me', { headers:{ Authorization:`Bearer ${token}` } }),
